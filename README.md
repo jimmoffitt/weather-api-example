@@ -1,34 +1,49 @@
 # weather-api-example
 A demo to illustrate how to go from an API design to implementing (and hosting) it on tinybird...
 
+The first step was finding a data source to work with. 
+
+
 ## API Endpoint design
+
+Endpoints: One /weather_data endpoint that returns weather data. 
+Query parameters: 
+  * We are serving temporal data, so will want `start_time` and `end_time` query parameters.
+    * `start_time` defaults to 7 days ago. 
+    * `end_time` defaults to the time of the request time (i.e. now).  
+    * So one week of data is returned if you do not specify these.
+  * Let's users request a specific weather data type. Such as temperature or precipitation. 
+  * Let's have a `max_results` for giving users controls on how much they retrieve. 
+  * Let the user select a single city to get data for. 
 
 Important notes:
 * All timestamps are in UTC.
 
 In the form of example requests, here is the design:
 
-Request the latest 1000 weather reports from around the US. 
+* Request the latest 1000 weather reports from around the US. 
 ```
 https://api.tinybird.co/v0/pipes/weather_data.json&max_results=1000
 ```
 
-Request temperature reports only from around the US.
-
+* Request temperature reports only from around the US.
 ```
 https://api.tinybird.co/v0/pipes/weather_data.json?sensor_type=temp
 ```
 
+* Request just temperature data from the city of Minneapolis. 
+```
+weather_data?city=minneapolis&sensor_type=temp
+```
 
+* Request data for the city of Denver, and for May 3, 2023, midnight to midnight local time (MDT).
 ```
 weather_data?city=denver&start_time=2023-05-03 06:00:00&end_time=2023-05-04 06:00:00
 ```
 
+* Show me the top ten precipitation 1-hr totals over the past week. 
 ```
 weather_data?city=minneapolis&sensor_type=precip&max_results=10
 ```
 
 
-```
-weather_data?city=minneapolis&sensor_type=temp
-```
