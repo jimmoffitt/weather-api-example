@@ -47,7 +47,7 @@ Sending these weather report JSON objects to Tinybird via the Events API.
   * Let the user select a single `city` to get data for. 
 
 
-## Example requests
+### Example requests
 
 In the form of example requests, here is the design:
 
@@ -76,4 +76,5 @@ weather_data?city=denver&start_time=2023-05-03 06:00:00&end_time=2023-05-04 06:0
 weather_data?city=minneapolis&sensor_type=precip&max_results=10
 ```
 
+## Implementing API on Tinybird
 
