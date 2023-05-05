@@ -5,7 +5,8 @@ import time
 import os
 import numpy as np
 from dotenv import load_dotenv
-load_dotenv()
+dotenv_path = os.path.join(os.path.dirname(__file__), 'config', '.env')
+load_dotenv(dotenv_path)
 
 FETCH_INTERVAL = 300 #seconds -- How often are we pulling data from the weather API?
 
@@ -78,6 +79,6 @@ while True:
         # Waiting until next request to weather API. In seconds:
         time.sleep(1) 
 
-    # Wait for before iterating through all the cities again... 
-    print(f"Sleeping for 15 minutes at {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    time.sleep(300)
+    # Wait before iterating through all the cities again... 
+    print(f"Sleeping for {FETCH_INTERVAL/60} minutes at {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    time.sleep( FETCH_INTERVAL )
