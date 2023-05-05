@@ -84,21 +84,116 @@ For the above request, we are baking in a 'special' convention, where if you spe
 
 {introduction to the Tinybird concepts of Workspaces, Data Sources, Pipes, and Nodes.}
 
-One of the joys of designing endpoints with Tinybird is that you can iteratively apply simple SQL queries and chain them together. This enables you to essentially break up complicated queries into more simple building blocks. These multiple queries are written in separate Nodes, and those nodes are chained together to create a data processing Pipe. When your queries are producing a data view of your liking, you can then publish that last Node in the Pipe as an API Endpoint. 
+One of the joys of designing endpoints with Tinybird is that you can iteratively apply simple SQL queries and chain them together. This enables you to essentially break up complicated queries into more simple building blocks. These multiple queries are written in separate Nodes, and those Nodes are chained together to create a data processing Pipe. When your queries are producing a data view of your liking, you can then publish that last Node in the Pipe as an API Endpoint. 
 
 For this example, the Pipe is named "weather_data" and its end result is publihed as the '/weather_data' endpoint. 
 
 This Pipe is made up of the following nodes:
 
-* city_and_period_of_interest
+* city_and_period_of_interest: where the `city`, `start_time`, and `end_time` 
 * sensor_type
 * endpoint
 
 
 ### city_and_period_of_interest Node
+In this Node, we are checking for the use of the `city`, `start_time`, and `end_time` parameters. All of these are checked for and applied in the WHERE clause. By applying these here, we can reduce the amount of data retrieved during this first query. This is where we apply the "period of interest" logic, where `start_time` defaults to seven days ago, and where `end_time` defaults to now(). 
+
+Here is what that Node defintion looks like:
+
+```sql
+NODE city_and_period_of_interest
+DESCRIPTION >
+    Applying 'city', 'start_time', and 'end_time' query parameters. A case where we pull in every field and do not take this opportunity to drop fields. The fields arriving via the Event API have already been curated by a Python script.
+
+SQL >
+
+    %
+    SELECT *
+    FROM incoming_weather_data
+    WHERE
+        1=1
+         {% if defined(city) %}
+            AND lowerUTF8(site_name) LIKE lowerUTF8({{ String(city, description="Name of US City to retrieve data for.") }})
+         {% end %}
+         {% if defined(start_time) and defined(end_time) %}
+             AND (toDateTime(timestamp) BETWEEN {{DateTime(start_time, description="Start date in format YYYY-MM-DD HH:MM:SS. Defaults to one week ago if not defined.")}}
+             AND {{DateTime(end_time, description="End date in format YYYY-MM-DD HH:MM:00. Defaults to NOW if not defined.")}})
+         {% end %}
+         {% if not defined(start_time) and not defined(end_time) %}
+            AND toDateTime(timestamp) BETWEEN addDays(now(),-7) AND now()
+         {% end %}
+         {% if defined(start_time) and not defined(end_time) %}
+             AND toDateTime(timestamp) BETWEEN {{DateTime(start_time, description="Start date in format YYYY-MM-DD. Defaults to yesterday if not defined.")}}
+             AND now()
+         {% end %}
+```
 
 ### sensor_type Node
+In this Node, we check if the `sensor_type` parameter is used, and if it is, we use the setting to affect the SELECT fields. Here we have a if/else-if/else statement that SELECTs just type selected, or else includes all the types. 
+
+```sql
+NODE sensor_type
+DESCRIPTION >
+    Here we support the sensor_type query parameters. When used, just that data type is returned.
+
+SQL >
+
+    %
+    SELECT
+        timestamp,
+        site_name,
+        {% if defined(sensor_type) %}
+            {% if String(sensor_type, description="Type of weather data to return. Options: temp, precip, wind, humidity, pressure, and clouds. ") == 'temp' %} temp_f
+            {% elif sensor_type == 'precip' %} precip
+            {% elif sensor_type == 'wind' %} wind_speed, wind_dir
+            {% elif sensor_type == 'humidity' %} humidity
+            {% elif sensor_type == 'pressure' %} pressure
+            {% elif sensor_type == 'clouds' %} clouds
+            {% end %}
+        {% else %}
+            temp_f,
+            precip,
+            wind_speed,
+            wind_dir,
+            humidity,
+            pressure,
+            clouds,
+            description
+        {% end %} 
+    FROM city_and_period_of_interest
+
 
 ### endpoint Node
 
+In this Node, we apply the `max_results` parameter. If the `sensor_type` parameter is not include, we just apply the `max_results` as the query LIMIT and ORDER by timestamp DESC. If the `sensor_type` is included, we do the extra work to ORDER BY the value of that type in descending order, while applying `max_results` as a LIMIT on those results. This convention enables the retrieval of the "top X" of highest temperatures, or precipitation, or whatever type, for the time period and location of interest. Or "top" values for the entire US over the last week.
 
+```sql
+NODE endpoint
+DESCRIPTION >
+    Here we apply the 'max_results' parameter, and if a sensor_type parameter is included, we order by descending values of that sensor type. So, sensor_type=temp&limit=10 will return the top highest temperatures for the period of interest.
+
+SQL >
+    %
+    SELECT * FROM sensor_type
+    {% if defined(sensor_type) and defined(max_results) %}
+        {% if sensor_type == 'temp' %} 
+          ORDER BY temp_f DESC
+        {% elif sensor_type == 'precip' %} 
+          ORDER BY precip DESC
+        {% elif sensor_type == 'wind' %} 
+          ORDER BY wind_speed DESC
+        {% elif sensor_type == 'humidity' %} 
+          ORDER BY humidity DESC	
+        {% elif sensor_type == 'pressure' %} 
+          ORDER BY pressure DESC
+        {% elif sensor_type == 'clouds' %} 
+          ORDER BY clouds DESC
+        {% end %}
+    {% else %}
+      ORDER BY timestamp DESC
+    {% end %} 
+    {% if defined(max_results) %}
+    LIMIT {{Int16(max_results, description="The maximum number of weather data points to return.")}}
+    {% end %}
+
+```
