@@ -110,12 +110,13 @@ weather_data?sensor_type=precip&max_results=10
 ```
 For the above request, we are baking in a 'special' convention, where if you specify use `sensor_type` AND set `max_results`, you will get the highest values for that sensor type. In all other cases (when `sensor_type` is NOT used), the data is ordered temporally in reverse chronological order. 
 
-For the purposes of this demo, we have the design of our first API Endpoint. We have landed on a set of query parameters that should provide users flexible ways to retrieve current and recent weather data from across the US. Now it's time to implementing it on Tinybird. 
+For the purposes of this demo, we now have the design of our first API Endpoint. We have landed on a set of query parameters that should provide users flexible ways to retrieve current and recent weather data from across the US. Now it's time to implement the API Endpoint on Tinybird. 
+
 
 
 ## Implementing API on Tinybird
 
-One of the joys of designing endpoints with Tinybird is that you can iteratively apply simple SQL queries and chain them together. This enables you to essentially break up complicated queries into more simple building blocks. These multiple queries are written in separate Nodes, and those Nodes are chained together to create a data processing Pipe. When your queries are producing a data view of your liking, you can then publish that last Node in the Pipe as an API Endpoint. 
+One of the joys of designing endpoints with Tinybird is that you can iteratively apply simple SQL queries and sequence them in order. This enables you to essentially break up complicated queries into more simple building blocks. These multiple queries are written in separate Nodes, and those Nodes are sequenced together to create a data processing Pipe. When your queries are producing a data view of your liking, you can then publish that Node as an API Endpoint. 
 
 For this example, the Pipe is named "weather_data" and its end result is publihed as the '/weather_data' endpoint. 
 
