@@ -161,7 +161,7 @@ SQL >
             description
         {% end %} 
     FROM city_and_period_of_interest
-
+```
 
 ### endpoint Node
 
