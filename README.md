@@ -3,6 +3,22 @@ A demo to illustrate how to go from an API design to implementing (and hosting) 
 
 The first step was finding a data source to work with. 
 
+## Loading weather data into Tinybird.
+
+The JSON we are sending looks like this:
+
+```json
+
+
+```
+
+
+Sending these weather report JSON objects to Tinybird via the Events API.
+``` python
+ # Send the JSON object to the Tinybird Events API
+ headers = {"Authorization": f"Bearer {tinybird_token}", "Content-Type": "application/json"}
+ response = requests.post(tinybird_url, headers=headers, data=json_data)
+```    
 
 ## API Endpoint design
 
