@@ -52,14 +52,16 @@ Sending these weather report JSON objects to Tinybird via the Events API.
 
 In the form of example requests, here is the design:
 
+The root URL for all of these examples is `https://api.tinybird.co/v0/pipes/weather_data.json`. In these examples, we will reference just the `/weather_data.json` portion along with the query parameters.
+
 * Request the latest 1000 weather reports from around the US. 
 ```
-https://api.tinybird.co/v0/pipes/weather_data.json&max_results=1000
+/weather_data.json&max_results=1000
 ```
 
 * Request temperature reports only from around the US.
 ```
-https://api.tinybird.co/v0/pipes/weather_data.json?sensor_type=temp
+/weather_data.json?sensor_type=temp
 ```
 
 * Request just temperature data from the city of Minneapolis. 
