@@ -11,19 +11,25 @@ The first step was finding a data source to work with. After searching around, I
 
 Admittedly, this demo has its roots in an overall semi-silly design, where we are pulling data from a weather API just to turn around and make the data available from another weather API. Yet the patterns demonnstrated here apply to however you ingest your 'source' data into Tinybird. You could easily imagine some other generator of weather data standing in for OpenWeatherMap. 
 
-## Loading weather data into Tinybird.
+## The building blocks of Tinybird
+
+To get started, let's establish the terms we'll use to describe what we are building. 
 
 The 'moving' pieces of Tinybird can be represented by these fundamental objects:
-* Workspace
-* Data Source
-* Pipe
-* Node
+* Workspaces - an organizing object used to host Data Sources, Pipes, and Nodes. As well as the storage needed for the persisted data.   
+* Data Sources - represents an archive of data that is continually receiving new data. Data Sources can be thought of as database tables. Time-to-lives can be set to limit the history retained. 
+* Pipes - Data passes through a Pipe on the way to generating API Endpoint responses. The source of a Pipe is a Data Source. Pipes host one or more Nodes, which are linked together in a sequence. 
+* Nodes - Nodes contain instructions for selecting, filtering, ordering, and joining data. These instructions are defined with SQL. Nodes are executed in order, meaning you can apply simple queries, one at a time, instead of needing to develop one complicated query. Nodes are also where API Endpoint query parameters are implemented using a scripting notation embedded in the SQL (see examples below).
+* API Endpoint - Any Node can be published as an API Endpoint. 
 
-The first step of implementing a Tinybird API Endpoint is creating a Data Source, and establishing an ingestiom process to provide 'fresh' data.  
+Note that there are other important build blocks such as Auth Tokens and Organizations for when your use case needs multiple Workspaces. On top of that, there are APIs that support each of these objects. 
+
+## Loading weather data into Tinybird.
+
+The first step of implementing a Tinybird API Endpoint is creating a Data Source, and establishing an ingestiom process to provide 'fresh' data.  There are many ways to ingest data into Tinybird, and the one you'll use depends on how your data is generated. Real-time data is commonly published to kafka-based streams. Data is commonly loaded into data stores ranging from local databases to cloud-based data stores such as BigQuery and Snowflake. And one of the most common pathways is making API requests to a third-party generator and sending that data to Tinybird using the Events API. That is the pathway that drives this demo, requesting data from the OpenWeatherMap API, preparing a simple 'weather report' JSON object and posting it to the Events API.  
 
 
-
-The JSON we are sending looks like this:
+For this example, the 'weather report' JSON we are sending looks like this:
 
 ```json
 {
@@ -41,16 +47,13 @@ The JSON we are sending looks like this:
 
 ```
 
-Creating a new Data Source by posting JSON with a new Data Source name:
-
+Creating a new Data Source by posting JSON with the new Data Source `weather_data` name:
 ```curl
 curl \
       -X POST 'https://api.tinybird.co/v0/events?name=weather_data' \
       -H "Authorization: Bearer {TOKEN}" \
       -d $' {"timestamp": "2023-05-01 12:45:53","site_name": "New York City","temp_f": 59.65,"precip": 0.0,"humidity": 41,"pressure": 994,"wind_speed": 21.85,"wind_dir": 240,"clouds": 100,"description": "overcast clouds"}'
 ```
-
-
 
 Sending these weather report JSON objects to Tinybird via the Events API.
 ``` python
@@ -107,9 +110,10 @@ weather_data?city=minneapolis&sensor_type=precip&max_results=10
 ```
 For the above request, we are baking in a 'special' convention, where if you specify use `sensor_type` AND set `max_results`, you will get the highest values for that sensor type. 
 
-## Implementing API on Tinybird
+For the purposes of this demo, we have the design of our first API Endpoint. We have landed on a set of query parameters that should provide users flexible ways to retrieve current and recent weather data from across the US. Now it's time to implementing it on Tinybird. 
 
-{introduction to the Tinybird concepts of Workspaces, Data Sources, Pipes, and Nodes.}
+
+## Implementing API on Tinybird
 
 One of the joys of designing endpoints with Tinybird is that you can iteratively apply simple SQL queries and chain them together. This enables you to essentially break up complicated queries into more simple building blocks. These multiple queries are written in separate Nodes, and those Nodes are chained together to create a data processing Pipe. When your queries are producing a data view of your liking, you can then publish that last Node in the Pipe as an API Endpoint. 
 
