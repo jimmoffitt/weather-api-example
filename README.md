@@ -1,11 +1,27 @@
 # weather-api-example
-A demo to illustrate how to go from an API design to implementing (and hosting) it on tinybird...
+A demo to illustrate how to go from an API design to implementing (and hosting) it on tinybird... 
+
+The main topics here are:
+* Coming up with a design for a single endpoint of an API used to get current and recent weather data. 
+* Demonstrating how that design is translated to and implemented with Tinybird. 
+
+While this example focuses on publishing weather data, the underlying concepts should apply to an other data domain. 
 
 The first step was finding a data source to work with. After searching around, I landed on https://openweathermap.org/, with their free plan for the "Current weather and forecasts" service. It seems to offer a generous amount of API calls per minute, and the http://api.openweathermap.org/data/2.5/weather endpoint has been a pleasure to work with. 
 
-Admittedly, this demo has its roots in an overall semi-silly design, where we are pulling data from a weather API just to turn around and make the data available from another weather API. 
+Admittedly, this demo has its roots in an overall semi-silly design, where we are pulling data from a weather API just to turn around and make the data available from another weather API. Yet the patterns demonnstrated here apply to however you ingest your 'source' data into Tinybird. You could easily imagine some other generator of weather data standing in for OpenWeatherMap. 
 
 ## Loading weather data into Tinybird.
+
+The 'moving' pieces of Tinybird can be represented by these fundamental objects:
+* Workspace
+* Data Source
+* Pipe
+* Node
+
+The first step of implementing a Tinybird API Endpoint is creating a Data Source, and establishing an ingestiom process to provide 'fresh' data.  
+
+
 
 The JSON we are sending looks like this:
 
@@ -24,6 +40,17 @@ The JSON we are sending looks like this:
 }
 
 ```
+
+Creating a new Data Source by posting JSON with a new Data Source name:
+
+```curl
+curl \
+      -X POST 'https://api.tinybird.co/v0/events?name=weather_data' \
+      -H "Authorization: Bearer {TOKEN}" \
+      -d $' {"timestamp": "2023-05-01 12:45:53","site_name": "New York City","temp_f": 59.65,"precip": 0.0,"humidity": 41,"pressure": 994,"wind_speed": 21.85,"wind_dir": 240,"clouds": 100,"description": "overcast clouds"}'
+```
+
+
 
 Sending these weather report JSON objects to Tinybird via the Events API.
 ``` python
