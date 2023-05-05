@@ -78,6 +78,27 @@ weather_data?city=denver&start_time=2023-05-03 06:00:00&end_time=2023-05-04 06:0
 ```
 weather_data?city=minneapolis&sensor_type=precip&max_results=10
 ```
+For the above request, we are baking in a 'special' convention, where if you specify use `sensor_type` AND set `max_results`, you will get the highest values for that sensor type. 
 
 ## Implementing API on Tinybird
+
+{introduction to the Tinybird concepts of Workspaces, Data Sources, Pipes, and Nodes.}
+
+One of the joys of designing endpoints with Tinybird is that you can iteratively apply simple SQL queries and chain them together. This enables you to essentially break up complicated queries into more simple building blocks. These multiple queries are written in separate Nodes, and those nodes are chained together to create a data processing Pipe. When your queries are producing a data view of your liking, you can then publish that last Node in the Pipe as an API Endpoint. 
+
+For this example, the Pipe is named "weather_data" and its end result is publihed as the '/weather_data' endpoint. 
+
+This Pipe is made up of the following nodes:
+
+* city_and_period_of_interest
+* sensor_type
+* endpoint
+
+
+### city_and_period_of_interest Node
+
+### sensor_type Node
+
+### endpoint Node
+
 
