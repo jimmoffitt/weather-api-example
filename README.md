@@ -1,7 +1,9 @@
 # weather-api-example
 A demo to illustrate how to go from an API design to implementing (and hosting) it on tinybird...
 
-The first step was finding a data source to work with. 
+The first step was finding a data source to work with. After searching around, I landed on https://openweathermap.org/, with their free plan for the "Current weather and forecasts" service. It seems to offer a generous amount of API calls per minute, and the http://api.openweathermap.org/data/2.5/weather endpoint has been a pleasure to work with. 
+
+Admittedly, this demo has its roots in an overall semi-silly design, where we are pulling data from a weather API just to turn around and make the data available from another weather API. 
 
 ## Loading weather data into Tinybird.
 
@@ -22,7 +24,6 @@ The JSON we are sending looks like this:
 }
 
 ```
-
 
 Sending these weather report JSON objects to Tinybird via the Events API.
 ``` python
