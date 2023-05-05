@@ -89,9 +89,9 @@ The root URL for all of these examples is `https://api.tinybird.co/v0/pipes/weat
 /weather_data.json&max_results=1000
 ```
 
-* Request temperature reports only from around the US.
+* Request precipitation reports from around the US.
 ```
-/weather_data.json?sensor_type=temp
+/weather_data.json?sensor_type=precip
 ```
 
 * Request just temperature data from the city of Minneapolis. 
@@ -104,11 +104,11 @@ weather_data?city=minneapolis&sensor_type=temp
 weather_data?city=denver&start_time=2023-05-03 06:00:00&end_time=2023-05-04 06:00:00
 ```
 
-* Show me the top ten precipitation 1-hr totals over the past week. 
+* Retrieve the top ten precipitation 1-hr totals over the past week. 
 ```
-weather_data?city=minneapolis&sensor_type=precip&max_results=10
+weather_data?sensor_type=precip&max_results=10
 ```
-For the above request, we are baking in a 'special' convention, where if you specify use `sensor_type` AND set `max_results`, you will get the highest values for that sensor type. 
+For the above request, we are baking in a 'special' convention, where if you specify use `sensor_type` AND set `max_results`, you will get the highest values for that sensor type. In all other cases (when `sensor_type` is NOT used), the data is ordered temporally in reverse chronological order. 
 
 For the purposes of this demo, we have the design of our first API Endpoint. We have landed on a set of query parameters that should provide users flexible ways to retrieve current and recent weather data from across the US. Now it's time to implementing it on Tinybird. 
 
