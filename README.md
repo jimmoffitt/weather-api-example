@@ -8,7 +8,18 @@ The first step was finding a data source to work with.
 The JSON we are sending looks like this:
 
 ```json
-
+{
+	"timestamp": "2023-05-04 18:07:08",
+	"site_name": "New York City",
+	"temp_f": 52.12,
+	"precip": 0.0,
+	"humidity": 79,
+	"pressure": 1017,
+	"wind_speed": 10.36,
+	"wind_dir": 190,
+	"clouds": 100,
+	"description": "overcast clouds"
+}
 
 ```
 
@@ -28,12 +39,13 @@ Query parameters:
     * `start_time` defaults to 7 days ago. 
     * `end_time` defaults to the time of the request time (i.e. now).  
     * So one week of data is returned if you do not specify these.
+    * Note: All timestamps are in UTC.
   * Let's users request a specific weather data type. Such as temperature or precipitation. 
   * Let's have a `max_results` for giving users controls on how much they retrieve. 
   * Let the user select a single city to get data for. 
 
-Important notes:
-* All timestamps are in UTC.
+
+## Example requests
 
 In the form of example requests, here is the design:
 
