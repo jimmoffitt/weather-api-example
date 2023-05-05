@@ -22,7 +22,9 @@ The 'moving' pieces of Tinybird can be represented by these fundamental objects:
 * Nodes - Nodes contain instructions for selecting, filtering, ordering, and joining data. These instructions are defined with SQL. Nodes are executed in order, meaning you can apply simple queries, one at a time, instead of needing to develop one complicated query. Nodes are also where API Endpoint query parameters are implemented using a scripting notation embedded in the SQL (see examples below).
 * API Endpoint - Any Node can be published as an API Endpoint. 
 
-Note that there are other important build blocks such as Auth Tokens and Organizations for when your use case needs multiple Workspaces. On top of that, there are APIs that support each of these objects. 
+Note that there are other important build blocks such as Auth Tokens and Organizations (for when your use case needs multiple Workspaces). 
+
+These objects can be managed (created, updated, deleted) directly with the Tinybird Dashboard, by using a command-line interface (CLI), or with APIs for each of these objects. 
 
 ## Loading weather data into Tinybird.
 
@@ -86,7 +88,7 @@ The root URL for all of these examples is `https://api.tinybird.co/v0/pipes/weat
 
 * Request the latest 1000 weather reports from around the US. 
 ```
-/weather_data.json&max_results=1000
+/weather_data.json?max_results=1000
 ```
 
 * Request precipitation reports from around the US.
