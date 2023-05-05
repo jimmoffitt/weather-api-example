@@ -43,8 +43,8 @@ Sending these weather report JSON objects to Tinybird via the Events API.
     * `end_time` defaults to the time of the request time (i.e. now).  
     * So one week of data is returned if you do not specify these.
     * Note: All timestamps are in UTC.
-  * Let's users request a specific `sensor_type`. Supported values: `temp`, `precip`, `wind`, `hunidity`, `pressure`, and `clouds`. Note that `wind` returns both velocity (mph) and direction (degrees).  
-  * Let's have a `max_results` for giving users controls on how much they retrieve. 
+  * Let users request a specific `sensor_type`. Supported values: `temp`, `precip`, `wind`, `hunidity`, `pressure`, and `clouds`. Note that `wind` returns both velocity (mph) and direction (degrees).  
+  * Let's have a `max_results` for giving users control on how much they retrieve. 
   * Let the user select a single `city` to get data for. 
 
 
