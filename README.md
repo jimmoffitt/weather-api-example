@@ -33,16 +33,18 @@ Sending these weather report JSON objects to Tinybird via the Events API.
 
 ## API Endpoint design
 
-Endpoints: One /weather_data endpoint that returns weather data. 
-Query parameters: 
+### Endpoints 
+* One `/weather_data.json` endpoint that returns weather data. 
+
+### Query parameters 
   * We are serving temporal data, so will want `start_time` and `end_time` query parameters.
     * `start_time` defaults to 7 days ago. 
     * `end_time` defaults to the time of the request time (i.e. now).  
     * So one week of data is returned if you do not specify these.
     * Note: All timestamps are in UTC.
-  * Let's users request a specific weather data type. Such as temperature or precipitation. 
+  * Let's users request a specific `sensor_type`. Such as temperature or precipitation. 
   * Let's have a `max_results` for giving users controls on how much they retrieve. 
-  * Let the user select a single city to get data for. 
+  * Let the user select a single `city` to get data for. 
 
 
 ## Example requests
