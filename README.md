@@ -129,7 +129,8 @@ This Pipe is made up of the following nodes:
 * endpoint
 
 
-### city_and_period_of_interest Node
+### Selecting the location and time period of interest
+#### The 'city_and_period_of_interest' Node
 In this Node, we are checking for the use of the `city`, `start_time`, and `end_time` parameters. All of these are checked for and applied in the WHERE clause. By applying these here, we can reduce the amount of data retrieved during this first query. This is where we apply the "period of interest" logic, where `start_time` defaults to seven days ago, and where `end_time` defaults to now(). 
 
 Here is what that Node defintion looks like:
@@ -161,8 +162,8 @@ SQL >
              AND now()
          {% end %}
 ```
-
-### sensor_type Node
+### Selecting the weather data type of interest
+#### The 'sensor_type' Node
 In this Node, we check if the `sensor_type` parameter is used, and if it is, we use the setting to affect the SELECT fields. Here we have a if/else-if/else statement that SELECTs just type selected, or else includes all the types. 
 
 ```sql
@@ -197,7 +198,8 @@ SQL >
     FROM city_and_period_of_interest
 ```
 
-### endpoint Node
+### Applying the 'max_results' query parameter
+#### endpoint Node
 
 In this Node, we apply the `max_results` parameter. If the `sensor_type` parameter is not include, we just apply the `max_results` as the query LIMIT and ORDER by timestamp DESC. If the `sensor_type` is included, we do the extra work to ORDER BY the value of that type in descending order, while applying `max_results` as a LIMIT on those results. This convention enables the retrieval of the "top X" of highest temperatures, or precipitation, or whatever type, for the time period and location of interest. Or "top" values for the entire US over the last week.
 
