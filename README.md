@@ -1,5 +1,5 @@
 # weather-api-example
-A demo to illustrate how to go from an API design to implementing (and hosting) it on tinybird... 
+A demo to illustrate how to go from an API design to implementing (and hosting) it on Tinybird... 
 
 The main topics here are:
 * Coming up with a design for a single endpoint of an API used to get current and recent weather data. 
@@ -13,16 +13,21 @@ Admittedly, this demo has its roots in an overall semi-silly design, where we ar
 
 ## The building blocks of Tinybird
 
-To get started, let's establish the terms we'll use to describe what we are building. 
+To get started, let's establish some terms that help describe what we are building. 
 
 The 'moving' pieces of Tinybird can be represented by these fundamental objects:
-* Workspaces - an organizing object used to host Data Sources, Pipes, and Nodes. As well as the storage needed for the persisted data.   
-* Data Sources - represents an archive of data that is continually receiving new data. Data Sources can be thought of as database tables. Time-to-lives can be set to limit the history retained. 
-* Pipes - Data passes through a Pipe on the way to generating API Endpoint responses. The source of a Pipe is a Data Source. Pipes host one or more Nodes, which are linked together in a sequence. 
-* Nodes - Nodes contain instructions for selecting, filtering, ordering, and joining data. These instructions are defined with SQL. Nodes are executed in order, meaning you can apply simple queries, one at a time, instead of needing to develop one complicated query. Nodes are also where API Endpoint query parameters are implemented using a scripting notation embedded in the SQL (see examples below).
+
+* Workspaces - an organizing object used to host Data Sources, Pipes, and Nodes.    
+
+* Data Sources - represents an archive of data that is typically continually receiving new data. Here, Tinybird is abstracting away the ability to stream in real-time data to a data store. Data Sources can be thought of as database tables. Tables can be configured to keep a moving time window of data with a TTL (time-to-live) setting.  
+
+* Pipes - Data passes through a Pipe on the way to generating API Endpoint responses. The source of a Pipe is a Data Source. Pipes host one or more Nodes, which are linked together in sequence. Nodes are where data is transformed in some way. Here, Tinybird is providing an interactive way to iterate on data views and API Endpoints. 
+
+* Nodes - Nodes apply SQL queries for selecting, filtering, ordering, and joining data. Nodes are executed in order, meaning you can apply simple queries, one at a time, instead of needing to develop one complicated query. Nodes are also where API Endpoint query parameters are implemented using a [scripting notation](https://www.tinybird.co/docs/query-parameters.html) embedded in the SQL (see examples below). Here, Tinybird is providing a templating mechanism for  
+
 * API Endpoint - Any Node can be published as an API Endpoint. 
 
-Note that there are other important build blocks such as Auth Tokens and Organizations (for when your use case needs multiple Workspaces). 
+Note that there are other important build blocks such as Auth Tokens and Organizations (for when your use case needs multiple Workspaces). See our [API Introduction](https://www.tinybird.co/docs/api-reference/api-reference.html) documentation to learn more. 
 
 These objects can be managed (created, updated, deleted) directly with the Tinybird Dashboard, by using a command-line interface (CLI), or with APIs for each of these objects. 
 
@@ -143,24 +148,25 @@ DESCRIPTION >
 SQL >
 
     %
-    SELECT *
-    FROM incoming_weather_data
-    WHERE
-        1=1
-         {% if defined(city) %}
-            AND lowerUTF8(site_name) LIKE lowerUTF8({{ String(city, description="Name of US City to retrieve data for.") }})
-         {% end %}
-         {% if defined(start_time) and defined(end_time) %}
-             AND (toDateTime(timestamp) BETWEEN {{DateTime(start_time, description="Start date in format YYYY-MM-DD HH:MM:SS. Defaults to one week ago if not defined.")}}
-             AND {{DateTime(end_time, description="End date in format YYYY-MM-DD HH:MM:00. Defaults to NOW if not defined.")}})
-         {% end %}
-         {% if not defined(start_time) and not defined(end_time) %}
-            AND toDateTime(timestamp) BETWEEN addDays(now(),-7) AND now()
-         {% end %}
-         {% if defined(start_time) and not defined(end_time) %}
-             AND toDateTime(timestamp) BETWEEN {{DateTime(start_time, description="Start date in format YYYY-MM-DD. Defaults to yesterday if not defined.")}}
-             AND now()
-         {% end %}
+SELECT *
+FROM incoming_weather_data
+WHERE
+    1=1
+     {% if defined(city) %}
+        AND lowerUTF8(site_name) LIKE lowerUTF8({{ String(city) }})
+     {% end %}
+     {% if defined(start_time) and defined(end_time) %}
+         AND (toDateTime(timestamp) BETWEEN {{DateTime(start_time)}} AND {{DateTime(end_time)}})
+     {% end %}
+     {% if not defined(start_time) and not defined(end_time) %}
+        AND toDateTime(timestamp) BETWEEN addDays(now(),-1) AND now()
+     {% end %}
+     {% if defined(start_time) and not defined(end_time) %}
+         AND toDateTime(timestamp) BETWEEN {{DateTime(start_time)}} AND now()
+     {% end %}
+     {% if not defined(start_time) and defined(end_time) %}
+         AND toDateTime(timestamp) BETWEEN addDays( {{DateTime(end_time)}} ),-2) AND {{DateTime(end_time)}}
+     {% end %}         
 ```
 ### Selecting the weather data type of interest
 #### The 'sensor_type' Node
@@ -174,28 +180,21 @@ DESCRIPTION >
 SQL >
 
     %
-    SELECT
-        timestamp,
-        site_name,
-        {% if defined(sensor_type) %}
-            {% if String(sensor_type, description="Type of weather data to return. Options: temp, precip, wind, humidity, pressure, and clouds. ") == 'temp' %} temp_f
-            {% elif sensor_type == 'precip' %} precip
-            {% elif sensor_type == 'wind' %} wind_speed, wind_dir
-            {% elif sensor_type == 'humidity' %} humidity
-            {% elif sensor_type == 'pressure' %} pressure
-            {% elif sensor_type == 'clouds' %} clouds
-            {% end %}
-        {% else %}
-            temp_f,
-            precip,
-            wind_speed,
-            wind_dir,
-            humidity,
-            pressure,
-            clouds,
-            description
-        {% end %} 
-    FROM city_and_period_of_interest
+SELECT
+    timestamp,
+    site_name,
+    {% if defined(sensor_type) %}
+        {% if String(sensor_type, description="Type of weather data to return. Options: temp, precip, wind, humidity, pressure, and clouds. ") == 'temp' %} temp_f
+        {% elif sensor_type == 'precip' %} precip
+        {% elif sensor_type == 'wind' %} wind_speed, wind_dir
+        {% elif sensor_type == 'humidity' %} humidity
+        {% elif sensor_type == 'pressure' %} pressure
+        {% elif sensor_type == 'clouds' %} clouds
+        {% end %}
+    {% else %}
+        temp_f, precip, wind_speed, wind_dir, humidity, pressure, clouds, description
+    {% end %} 
+FROM city_and_period_of_interest
 ```
 
 ### Applying the 'max_results' query parameter
@@ -210,26 +209,27 @@ DESCRIPTION >
 
 SQL >
     %
-    SELECT * FROM sensor_type
-    {% if defined(sensor_type) and defined(max_results) %}
-        {% if sensor_type == 'temp' %} 
-          ORDER BY temp_f DESC
-        {% elif sensor_type == 'precip' %} 
-          ORDER BY precip DESC
-        {% elif sensor_type == 'wind' %} 
-          ORDER BY wind_speed DESC
-        {% elif sensor_type == 'humidity' %} 
-          ORDER BY humidity DESC	
-        {% elif sensor_type == 'pressure' %} 
-          ORDER BY pressure DESC
-        {% elif sensor_type == 'clouds' %} 
-          ORDER BY clouds DESC
-        {% end %}
-    {% else %}
-      ORDER BY timestamp DESC
-    {% end %} 
-    {% if defined(max_results) %}
-    LIMIT {{Int16(max_results, description="The maximum number of weather data points to return.")}}
+
+SELECT * FROM sensor_type
+{% if defined(sensor_type) and defined(max_results) %}
+    {% if sensor_type == 'temp' %} 
+      ORDER BY temp_f DESC
+    {% elif sensor_type == 'precip' %} 
+      ORDER BY precip DESC
+    {% elif sensor_type == 'wind' %} 
+      ORDER BY wind_speed DESC
+    {% elif sensor_type == 'humidity' %} 
+      ORDER BY humidity DESC	
+    {% elif sensor_type == 'pressure' %} 
+      ORDER BY pressure DESC
+    {% elif sensor_type == 'clouds' %} 
+      ORDER BY clouds DESC
     {% end %}
+{% else %}
+  ORDER BY timestamp DESC
+{% end %} 
+{% if defined(max_results) %}
+LIMIT {{Int16(max_results, 1000)}}
+{% end %}
 
 ```
