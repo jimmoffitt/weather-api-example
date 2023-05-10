@@ -11,6 +11,18 @@ The first step was finding a data source to work with. After searching around, I
 
 Admittedly, this demo has its roots in an overall semi-silly design, where we are pulling data from a weather API just to turn around and make the data available from another weather API. Yet the patterns demonstrated here apply to however you ingest your 'source' data into Tinybird. You could easily imagine some other generator of weather data standing in for OpenWeatherMap. 
 
+## Getting started (WIP!)
+
++ Go to [OpenWeatherMap](https://openweathermap.org/) and create a [free](https://openweathermap.org/price#weather) account for the "Current Weather and Forecasts" API.
+  + Generate an API key.  
++ Go to [Tinybird](http://tinybird.co) and create an account with the forever-free Build tier.
+  + Reference your Admin Token or create a User Token with read permissions.
++ In Tinybird, create Data Source and Pipe. 
++ Set up Python script to load near-real-time OpenWeatherMap data into Tinybird.
+  + Configure ./config/.env with the OpenWeatherMap and Tinybird tokens. 
+  + Run the send_weather_data.py script. 
+
+
 ## The building blocks of Tinybird
 
 To get started, let's establish some terms that help describe what we are building. 
