@@ -17,15 +17,15 @@ To get started, let's establish some terms that help describe what we are buildi
 
 The 'moving' pieces of Tinybird can be represented by these fundamental objects:
 
-* Workspaces - an organizing object used to host Data Sources, Pipes, and Nodes.    
++ **Workspaces** - an organizing object used to host Data Sources, Pipes, and Nodes.    
 
-* Data Sources - represents an archive of data that is typically continually receiving new data. Here, Tinybird is abstracting away the ability to stream in real-time data to a data store. Data Sources can be thought of as database tables. Tables can be configured to keep a moving time window of data with a TTL (time-to-live) setting.  
++ **Data Sources** - represents an archive of data that is typically continually receiving new data. Here, Tinybird is abstracting away the ability to stream in real-time data to a data store. Data Sources can be thought of as database tables. Tables can be configured to keep a moving time window of data with a TTL (time-to-live) setting.  
 
-* Pipes - Data passes through a Pipe on the way to generating API Endpoint responses. The source of a Pipe is a Data Source. Pipes host one or more Nodes, which are linked together in sequence. Nodes are where data is transformed in some way. Here, Tinybird is providing an interactive way to iterate on data views and API Endpoints. 
++ **Pipes** - Data passes through a Pipe on the way to generating API Endpoint responses. The source of a Pipe is a Data Source. Pipes host one or more Nodes, which are linked together in sequence. Nodes are where data is transformed in some way. Here, Tinybird is providing an interactive way to iterate on data views and API Endpoints. 
 
-* Nodes - Nodes apply SQL queries for selecting, filtering, ordering, and joining data. Nodes are executed in order, meaning you can apply simple queries, one at a time, instead of needing to develop one complicated query. Nodes are also where API Endpoint query parameters are implemented using a [scripting notation](https://www.tinybird.co/docs/query-parameters.html) embedded in the SQL (see examples below). Here, Tinybird is providing a templating mechanism for  
++ **Nodes** - Nodes apply SQL queries for selecting, filtering, ordering, and joining data. Nodes are executed in order, meaning you can apply simple queries, one at a time, instead of needing to develop one complicated query. Nodes are also where API Endpoint query parameters are implemented using a [scripting notation](https://www.tinybird.co/docs/query-parameters.html) embedded in the SQL (see examples below). Here, Tinybird is providing a templating mechanism for  
 
-* API Endpoint - Any Node can be published as an API Endpoint. 
++ **API Endpoints** - Any Node can be published as an API Endpoint. The 'view' the Node generates will be rendered as a API Endpoint response.
 
 Note that there are other important build blocks such as Auth Tokens and Organizations (for when your use case needs multiple Workspaces). See our [API Introduction](https://www.tinybird.co/docs/api-reference/api-reference.html) documentation to learn more. 
 
