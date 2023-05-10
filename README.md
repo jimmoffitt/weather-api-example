@@ -147,7 +147,8 @@ DESCRIPTION >
 
 SQL >
 
-    %
+   %
+
 SELECT *
 FROM incoming_weather_data
 WHERE
@@ -165,8 +166,10 @@ WHERE
          AND toDateTime(timestamp) BETWEEN {{DateTime(start_time)}} AND now()
      {% end %}
      {% if not defined(start_time) and defined(end_time) %}
-         AND toDateTime(timestamp) BETWEEN addDays( {{DateTime(end_time)}} ),-2) AND {{DateTime(end_time)}}
-     {% end %}         
+         AND toDateTime(timestamp) BETWEEN addDays(toDateTime({{DateTime(end_time)}}) ,-2) AND {{DateTime(end_time)}}
+         {% end %}
+ORDER BY timestamp DESC
+ 
 ```
 ### Selecting the weather data type of interest
 #### The 'sensor_type' Node
@@ -179,7 +182,8 @@ DESCRIPTION >
 
 SQL >
 
-    %
+   %
+
 SELECT
     timestamp,
     site_name,
@@ -209,6 +213,12 @@ DESCRIPTION >
 
 SQL >
     %
+WITH 
+{{  Int16(max_results, 1000, description="The maximum number of reports to return per response.")  }},
+{{  DateTime(start_time, description="'YYYY-MM-DD HH:mm'. The oldest UTC timestamp of data provided. Defaults to 24 hours ago.")  }} ,
+{{  DateTime(end_time, description="'YYYY-MM-DD HH:mm'. The most recent UTC timestamp of data provided. Defaults to time of request.")  }},
+{{  String(sensor_type, description="The type of weather data to return. Supported types: 'temp', 'precip', 'wind', 'humidity', 'pressure', 'clouds'. Default to all types.")  }},
+{{  String(city, description="Name of US City to get data for. Data is available for the 185 most populated cities in the US.")  }}
 
 SELECT * FROM sensor_type
 {% if defined(sensor_type) and defined(max_results) %}
@@ -231,5 +241,4 @@ SELECT * FROM sensor_type
 {% if defined(max_results) %}
 LIMIT {{Int16(max_results, 1000)}}
 {% end %}
-
 ```
