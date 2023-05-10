@@ -35,7 +35,7 @@ The 'moving' pieces of Tinybird can be represented by these fundamental objects:
 
 + **Pipes** - Data passes through a Pipe on the way to generating API Endpoint responses. The source of a Pipe is a Data Source. Pipes host one or more Nodes, which are linked together in sequence. Nodes are where data is transformed in some way. Here, Tinybird is providing an interactive way to iterate on data views and API Endpoints. 
 
-+ **Nodes** - Nodes apply SQL queries for selecting, filtering, ordering, and joining data. Nodes are executed in order, meaning you can apply simple queries, one at a time, instead of needing to develop one complicated query. Nodes are also where API Endpoint query parameters are implemented using a [scripting notation](https://www.tinybird.co/docs/query-parameters.html) embedded in the SQL (see examples below). Here, Tinybird is providing a templating mechanism for  
++ **Nodes** - Nodes apply SQL queries for selecting, filtering, ordering, and joining data. Nodes are executed in order, meaning you can apply simple queries, one at a time, instead of needing to develop one complicated query. Nodes are also where API Endpoint query parameters are implemented using a [scripting notation](https://www.tinybird.co/docs/query-parameters.html) embedded in the SQL (see examples below). Here, Tinybird is providing a templating mechanism for passing request parameters into SQL queries.  
 
 + **API Endpoints** - Any Node can be published as an API Endpoint. The 'view' the Node generates will be rendered as a API Endpoint response.
 
