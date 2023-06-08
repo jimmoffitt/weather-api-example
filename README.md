@@ -1,10 +1,6 @@
 # weather-api-example
 A demo to illustrate how to go from an API design to implementing (and hosting) it on Tinybird... 
 
-The main topics here are:
-* Coming up with a design for a single endpoint of an API used to get current and recent weather data. 
-* Demonstrating how that design is translated to and implemented with Tinybird. 
-
 While this example focuses on publishing weather data, the underlying concepts should apply to an other data domain. 
 
 The first step was finding a data source to work with. After searching around, I landed on https://openweathermap.org/, with their free plan for the "Current weather and forecasts" service. It seems to offer a generous amount of API calls per minute, and the http://api.openweathermap.org/data/2.5/weather endpoint has been a pleasure to work with. 
@@ -21,27 +17,6 @@ Admittedly, this demo has its roots in an overall semi-silly design, where we ar
 + Set up Python script to load near-real-time OpenWeatherMap data into Tinybird.
   + Configure ./config/.env with the OpenWeatherMap and Tinybird tokens. 
   + Run the send_weather_data.py script. 
-
-
-## The building blocks of Tinybird
-
-To get started, let's establish some terms that help describe what we are building. 
-
-The 'moving' pieces of Tinybird can be represented by these fundamental objects:
-
-+ **Workspaces** - an organizing object used to host Data Sources, Pipes, and Nodes.    
-
-+ **Data Sources** - represents an archive of data that is typically continually receiving new data. Here, Tinybird is abstracting away the ability to stream in real-time data to a data store. Data Sources can be thought of as database tables. Tables can be configured to keep a moving time window of data with a TTL (time-to-live) setting.  
-
-+ **Pipes** - Data passes through a Pipe on the way to generating API Endpoint responses. The source of a Pipe is a Data Source. Pipes host one or more Nodes, which are linked together in sequence. Nodes are where data is transformed in some way. Here, Tinybird is providing an interactive way to iterate on data views and API Endpoints. 
-
-+ **Nodes** - Nodes apply SQL queries for selecting, filtering, ordering, and joining data. Nodes are executed in order, meaning you can apply simple queries, one at a time, instead of needing to develop one complicated query. Nodes are also where API Endpoint query parameters are implemented using a [scripting notation](https://www.tinybird.co/docs/query-parameters.html) embedded in the SQL (see examples below). Here, Tinybird is providing a templating mechanism for passing request parameters into SQL queries.  
-
-+ **API Endpoints** - Any Node can be published as an API Endpoint. The 'view' the Node generates will be rendered as a API Endpoint response.
-
-Note that there are other important build blocks such as Auth Tokens and Organizations (for when your use case needs multiple Workspaces). See our [API Introduction](https://www.tinybird.co/docs/api-reference/api-reference.html) documentation to learn more. 
-
-These objects can be managed (created, updated, deleted) directly with the Tinybird Dashboard, by using a command-line interface (CLI), or with APIs for each of these objects. 
 
 ## Loading weather data into Tinybird.
 
@@ -131,20 +106,7 @@ For the above request, we are baking in a 'special' convention, where if you spe
 
 For the purposes of this demo, we now have the design of our first API Endpoint. We have landed on a set of query parameters that should provide users flexible ways to retrieve current and recent weather data from across the US. Now it's time to implement the API Endpoint on Tinybird. 
 
-
-
-## Implementing API on Tinybird
-
-One of the joys of designing endpoints with Tinybird is that you can iteratively apply simple SQL queries and sequence them in order. This enables you to essentially break up complicated queries into more simple building blocks. These multiple queries are written in separate Nodes, and those Nodes are sequenced together to create a data processing Pipe. When your queries are producing a data view of your liking, you can then publish that Node as an API Endpoint. 
-
-For this example, the Pipe is named "weather_data" and its end result is publihed as the '/weather_data' endpoint. 
-
-This Pipe is made up of the following nodes:
-
-* city_and_period_of_interest: where the `city`, `start_time`, and `end_time` 
-* sensor_type
-* endpoint
-
+## Nodes
 
 ### Selecting the location and time period of interest
 #### The 'city_and_period_of_interest' Node
