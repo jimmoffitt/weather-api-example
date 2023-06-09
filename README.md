@@ -120,55 +120,46 @@ DESCRIPTION >
     Applying 'city', 'start_time', and 'end_time' query parameters. A case where we pull in every field and do not take this opportunity to drop fields. The fields arriving via the Event API have already been curated by a Python script.
 
 SQL >
-
-   %
-
+%
 SELECT *
 FROM incoming_weather_data
 WHERE
     1=1
      {% if defined(city) %}
-        AND lowerUTF8(site_name) LIKE lowerUTF8({{ String(city) }})
+        AND lowerUTF8(site_name) LIKE lowerUTF8({{ String(city, description="Name of US City to get data for. Data is available for the 175 most populated cities in the US.") }})
      {% end %}
      {% if defined(start_time) and defined(end_time) %}
-         AND (toDateTime(timestamp) BETWEEN {{DateTime(start_time)}} AND {{DateTime(end_time)}})
+         AND toDateTime(timestamp) BETWEEN {{ DateTime(start_time, description="'YYYY-MM-DD HH:mm:ss'. UTC. Defaults to 24 hours ago. The oldest timestamp of data provided. Defines the start of the period of interest. ") }} AND {{ DateTime(end_time, description="'YYYY-MM-DD HH:mm:ss'. UTC. Defaults to time of request. The newest timestamp of data provided. Defines the end of the period of interest.") }}
      {% end %}
      {% if not defined(start_time) and not defined(end_time) %}
         AND toDateTime(timestamp) BETWEEN addDays(now(),-1) AND now()
      {% end %}
      {% if defined(start_time) and not defined(end_time) %}
-         AND toDateTime(timestamp) BETWEEN {{DateTime(start_time)}} AND now()
+         AND toDateTime(timestamp) BETWEEN {{ DateTime(start_time) }} AND now()
      {% end %}
      {% if not defined(start_time) and defined(end_time) %}
-         AND toDateTime(timestamp) BETWEEN addDays(toDateTime({{DateTime(end_time)}}) ,-2) AND {{DateTime(end_time)}}
-         {% end %}
+         AND toDateTime(timestamp) BETWEEN addDays(toDateTime({{DateTime(end_time)}}),-1) AND {{ DateTime(end_time) }}
+     {% end %}
 ORDER BY timestamp DESC
- 
 ```
 ### Selecting the weather data type of interest
-#### The 'sensor_type' Node
+#### The 'select_sensor_type' Node
 In this Node, we check if the `sensor_type` parameter is used, and if it is, we use the setting to affect the SELECT fields. Here we have a if/else-if/else statement that SELECTs just type selected, or else includes all the types. 
 
 ```sql
-NODE sensor_type
-DESCRIPTION >
-    Here we support the sensor_type query parameters. When used, just that data type is returned.
-
-SQL >
-
-   %
+%
+WITH
+{{ String(sensor_type, 'all', description="Type of weather data to return. Default is all types. Available types: 'temp', 'precip', 'wind', 'humidity', 'pressure', and 'clouds'. Wind returns both velocity and direction paramters. Units: temperature (F), precip (inches per hour), wind (mph and degrees) humidity (%), pressure (hPa), clouds (% coverage), ")}}
 
 SELECT
     timestamp,
     site_name,
-    {% if defined(sensor_type) %}
-        {% if String(sensor_type, description="Type of weather data to return. Options: temp, precip, wind, humidity, pressure, and clouds. ") == 'temp' %} temp_f
-        {% elif sensor_type == 'precip' %} precip
-        {% elif sensor_type == 'wind' %} wind_speed, wind_dir
-        {% elif sensor_type == 'humidity' %} humidity
-        {% elif sensor_type == 'pressure' %} pressure
-        {% elif sensor_type == 'clouds' %} clouds
-        {% end %}
+    {% if defined(sensor_type) and sensor_type == 'temp' %} temp_f
+    {% elif defined(sensor_type) and sensor_type == 'precip' %} precip
+    {% elif defined(sensor_type) and sensor_type == 'wind' %} wind_speed, wind_dir
+    {% elif defined(sensor_type) and sensor_type == 'humidity' %} humidity
+    {% elif defined(sensor_type) and sensor_type == 'pressure' %} pressure
+    {% elif defined(sensor_type) and sensor_type == 'clouds' %} clouds
     {% else %}
         temp_f, precip, wind_speed, wind_dir, humidity, pressure, clouds, description
     {% end %} 
@@ -187,14 +178,8 @@ DESCRIPTION >
 
 SQL >
     %
-WITH 
-{{  Int16(max_results, 1000, description="The maximum number of reports to return per response.")  }},
-{{  DateTime(start_time, description="'YYYY-MM-DD HH:mm'. The oldest UTC timestamp of data provided. Defaults to 24 hours ago.")  }} ,
-{{  DateTime(end_time, description="'YYYY-MM-DD HH:mm'. The most recent UTC timestamp of data provided. Defaults to time of request.")  }},
-{{  String(sensor_type, description="The type of weather data to return. Supported types: 'temp', 'precip', 'wind', 'humidity', 'pressure', 'clouds'. Default to all types.")  }},
-{{  String(city, description="Name of US City to get data for. Data is available for the 185 most populated cities in the US.")  }}
-
-SELECT * FROM sensor_type
+SELECT * 
+FROM select_sensor_type
 {% if defined(sensor_type) and defined(max_results) %}
     {% if sensor_type == 'temp' %} 
       ORDER BY temp_f DESC
@@ -213,6 +198,6 @@ SELECT * FROM sensor_type
   ORDER BY timestamp DESC
 {% end %} 
 {% if defined(max_results) %}
-LIMIT {{Int16(max_results, 1000)}}
+  LIMIT {{ Int32(max_results, 1000, description="The maximum number of reports to return per response. When used with 'sensor_type', data will be sorted by that type's value, in descending order.") }}
 {% end %}
 ```
